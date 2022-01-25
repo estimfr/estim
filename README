@@ -1,0 +1,20 @@
+This project generates audio signals using some primitives.
+* An amplitude primitive handles a value and a slew-rate. Each time the actual amplitude is not equal to the requested amplitude, the module reaches it according with the slew-rate.
+* An amplitude modulation primitive is applied to the amplitude above. It is a sinusoidal based wave form. The depth is a parameter. When the sine value is +1, the output is the amplitude left untouched. When the sine is -1, the output is between 0 if the depth is 100% and the amplitude left untouched if the depth is 0%. It can hold for a certain time on the top of the period and for another time on the bottom.
+* An output module that generates a sinusoidal or a symmetrical pulse output. The amplitude is the output of the modulation module described above. In case of the sine, only one parameter defines the frequency. In case of the pulses, a parameter defines the frequency as another one defines the pulse width.
+* Future modules are going to modulate the frequency
+
+The 2 sub-projects are
+* a pure IT project to handle (in and out) the parameters and to generate the sounds 
+* a pure electronics project to receive the parameters in one format only and to generate the sounds
+
+The base of the parameters format is the (music) midi notes. Each not and its velocity is mapped into a parameter and its value. There are many software on the Internet to edit mid files. There are some software and hardware to send and receive midi notes over the Internet (see rtp-midi).
+
+The documentation of the mapping between the notes and the parameters is in the midi_codes.h file located in software version folder. Is it human readable. The paragraph goes into the documentation after a doxygen run.
+
+It is written in the DevOps style. Some short cuts or quick and dirty parts are written and later cleaned up, removed or left as it. The commits into github are up and running tags.
+
+There is no documentation files. All the data is in the code. A run of the doxygen software, separately in the 2 folders generates the documentation in the format one wants.
+
+For more information, in the sub folders, there are README files specific to each sub-projects
+ 

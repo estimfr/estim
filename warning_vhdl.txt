@@ -1,0 +1,2 @@
+// char, short, long24 are used because this is a PoC of the VHDL version
+

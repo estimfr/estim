@@ -1,0 +1,2 @@
+The cordic_coeffs.py is intended to produce a couple of code lines. It is not needed for compiling the cpp nor vhdl version as it. One can use it to improve the precision of their calculation.
+It produces the coefficients with the relevant syntax for vhdl and C++

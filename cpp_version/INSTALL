@@ -1,0 +1,30 @@
+REQUIREMENTS TO BUILD
+
+Basic tool chains to build C++98 or higher software
+
+Run and dev libraries for JackAudio
+
+REQUIREMENTS TO RUN
+
+An up and running machine.
+Graphic environment is not required
+
+
+OPTIONAL REQUIREMENTS
+
+Doxygen
+    Doxygen is only required to build the documentation
+
+Graphviz
+    Graphviz is required to get smarter graphics while using Doxygen
+
+
+CONFIGURATION
+    There is no configure file as the software is written and relay on the standard C++ objects
+      Then the configuration comes with the compiler
+    Make script understands the CC and CXXFLAGS environement variables
+
+
+TESTED
+    It has been (yet) tested on 32 and 64 bits Intel based CPU
+	It has been teste with an old 4.3.4 gcc

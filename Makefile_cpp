@@ -1,0 +1,9 @@
+# This is intended to run the Github build
+# in the meantime workflows are available inside the subfolders
+# To get more options, use the Makefile inside the cpp_version folder
+
+estim:
+	cd cpp_version && $(MAKE) estim
+
+clean:
+	cd cpp_version && $(MAKE) clean

@@ -1,0 +1,7 @@
+Step 1
+* Add more input and output parameters formats. Both include more human readable text such as notes names and number. Input include "real" numerical values
+* Work on the VHDL version
+
+Step 2
+* Implement the jackaudio and the dummy interface
+* Work on the VHDL version
