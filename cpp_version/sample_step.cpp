@@ -1,5 +1,6 @@
 #include "sample_step.hxx"
 
+extern unsigned char debug_level;
 
 sample_step::sample_step( frequency_handler&frequency):
   frequency( frequency )
@@ -21,7 +22,9 @@ signed short sample_step_sine :: operator()(const unsigned short&amplitude)
   signed long cor_z;
 
   // Save it in order to not call more than one time the run operator
-  const signed long amplitude_r( amplitude );
+  signed long amplitude_r( amplitude );
+  amplitude_r <<= 6;
+  amplitude_r |= amplitude_r >> 16;
 
   frequency();
   unsigned long angle = frequency.GetAngle();
@@ -34,19 +37,19 @@ signed short sample_step_sine :: operator()(const unsigned short&amplitude)
   switch( angle & 0x00c00000 )
     {
     case 0x00000000:
-      cor_c = amplitude_r << 6;
+      cor_c = amplitude_r;
       cor_s = 0;
       break;
     case 0x00400000:
-      cor_s = amplitude_r << 6;
+      cor_s = amplitude_r;
       cor_c = 0;
       break;
     case 0x00800000:
-      cor_c = - ( amplitude_r << 6 );
+      cor_c = - amplitude_r;
       cor_s = 0;
       break;
     case 0x00c00000:
-      cor_s = - ( amplitude_r << 6 );
+      cor_s = - amplitude_r;
       cor_c = 0;
       break;
     }
@@ -86,7 +89,30 @@ signed short sample_step_sine :: operator()(const unsigned short&amplitude)
 	}
   // For debug chek the sum of the squares of the sine and cosine is 1 ... in fact the amplitude
   //  return (signed short)(((cor_s >> 8 )*(cor_s >> 8 ) + (cor_c >> 8 )*(cor_c >> 8 ))>>16);
-  return (signed short)((cor_s >> 8 ) + ( cor_s >> 11 ) + ( cor_s >> 12 ));
+  const signed long the_return = cor_s + ( cor_s >> 3 ) + ( cor_s >> 4 ) + ( cor_s >> 6 ) + ( cor_s >> 7 );
+  if ( the_return <= -8388608 )
+	{
+	  if ( debug_level >= 2 )
+		{
+		  cout << hex << "-" << the_return;
+		}
+	  return 0x8001;
+	}
+  else
+	{
+	  if ( the_return >= 8388608 )
+		{
+		  if ( debug_level >= 2 )
+			{
+			  cout << "+";
+			}
+		  return 0x7fff;
+		}
+	  else
+		{
+		  return (unsigned short)( the_return >> 8 );
+		}
+	}
 }
 sample_step_pulse :: sample_step_pulse( frequency_handler&frequency, const unsigned short&length ):
 	sample_step( frequency ), state( 0 )
@@ -105,7 +131,9 @@ signed short sample_step_pulse ::operator()(const unsigned short&amplitude)
   signed long the_return;
   frequency();
   // Save it in order to not call more than one time the run operator
-  const signed long amplitude_r( amplitude );
+  signed long amplitude_r( amplitude );
+  amplitude_r <<= 6;
+  amplitude_r |= amplitude_r >> 16;
   switch( state )
 	{
 	case 0:
@@ -121,49 +149,49 @@ signed short sample_step_pulse ::operator()(const unsigned short&amplitude)
 	case 17:
 	case 31:
 	  state += 1;
-	  the_return = (signed long)amplitude_r << 3;
+	  the_return = (signed long)amplitude_r >> 3;
 	  break;
 	case 2:
 	case 14:
 	case 18:
 	case 30:
 	  state += 1;
-	  the_return = (signed long)amplitude_r << 4;
+	  the_return = (signed long)amplitude_r >> 2;
 	  break;
 	case 3:
 	case 13:
 	case 19:
 	case 29:
 	  state += 1;
-	  the_return = (signed long)amplitude_r << 5;
+	  the_return = (signed long)amplitude_r >> 1;
 	  break;
 	case 4:
 	case 12:
 	case 20:
 	case 28:
 	  state += 1;
-	  the_return = (signed long)amplitude_r << 6;
+	  the_return = (signed long)amplitude_r;
 	  break;
 	case 5:
 	case 11:
 	case 21:
 	case 27:
 	  state += 1;
-	  the_return = ((signed long)amplitude_r << 7 ) - ((signed long)amplitude_r << 5);
+	  the_return = ((signed long)amplitude_r << 1 ) - ((signed long)amplitude_r >> 1);
 	  break;
 	case 6:
 	case 10:
 	case 22:
 	case 26:
 	  state += 1;
-	  the_return = ((signed long)amplitude_r << 7 ) - ((signed long)amplitude_r << 4 );
+	  the_return = ((signed long)amplitude_r << 1 ) - ((signed long)amplitude_r >> 2 );
 	  break;
 	case 7:
 	case 9:
 	case 23:
 	case 25:
 	  state += 1;
-	  the_return = ((signed long)amplitude_r << 7 ) - ((signed long)amplitude_r >> 3);
+	  the_return = ((signed long)amplitude_r << 1 ) - ((signed long)amplitude_r >> 3);
 	  length_count = 0;
 	  break;
 	case 8:
@@ -173,7 +201,7 @@ signed short sample_step_pulse ::operator()(const unsigned short&amplitude)
 		{
 		  state += 1;
 		}
-	  the_return = (signed long)amplitude_r << 7;
+	  the_return = (signed long)amplitude_r << 1;
 	  break;
 	case 16:
 	  state += 1;

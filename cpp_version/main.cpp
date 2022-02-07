@@ -18,6 +18,7 @@ using namespace std;
 
 extern char *optarg;
 
+unsigned char debug_level;
 
 int main(int argc,char *argv[] )
 {
@@ -35,10 +36,15 @@ int main(int argc,char *argv[] )
   char sample_rate_id = 1;
   char channels_number = 0;
 
-  while (( opt= getopt( argc, argv, "o:i:f:c:dj:r:hv" )) != EOF ) 
+  debug_level = 0;
+
+  while (( opt= getopt( argc, argv, "d:o:i:f:c:tj:r:hv" )) != EOF ) 
 	{
 	  switch ( opt )
 		{
+		case 'd':
+		  debug_level = atoi( optarg );
+		  break;
 		case 'o':
 		  file_outputs.push_back( string( optarg ));
 		  has_output = true;
@@ -54,7 +60,7 @@ int main(int argc,char *argv[] )
 		case 'c':
 		  channels_number = atoi( optarg );
 		  break;
-		case 'd':
+		case 't':
 		  run_dummy = true;
 		  cout << "Dummy -d OPTON IS NOT YET DONE" << endl;
 		  break;
@@ -100,10 +106,20 @@ int main(int argc,char *argv[] )
 	  cout << "Output commands channel, output audio or raw data filename should be provided" << endl;
 	  exit( EXIT_FAILURE );
 	}
+
+  if( debug_level != 0 )
+	{
+  	  cout << "Debug set to: " << dec << (unsigned short)debug_level << endl;
+	}
+
   if ( filename.empty() )
-	channels_number = 0;
+	{
+	  channels_number = 0;
+	}
   else
-	cout << "Opening raw file " << filename.c_str() << " for writing" << endl;
+	{
+	  cout << "Opening raw file " << filename.c_str() << " for writing" << endl;
+	}
 
   main_loop signals(sample_rate_id,'s',channels_number);
 

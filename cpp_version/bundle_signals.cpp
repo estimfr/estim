@@ -1,6 +1,8 @@
 #include "global_run.hxx"
 
 
+extern unsigned char debug_level;
+
 signal_channel::signal_channel( const unsigned short&channel_id,
 								const unsigned char&sample_rate_id,
 								const unsigned char&mode):
@@ -80,8 +82,10 @@ signed short signal_channel::operator()()
 	}
   if ( (unsigned short)ampl_modul_run_0_1 > pulse_output )
 	{
-	  if ( (unsigned short)ampl_modul_run_0_1 > ( pulse_output + 3 ))
-		cerr << "Problems 7 in signal_channel::operator()" << dec << (unsigned short)ampl_modul_run_0_1 << "  " << pulse_output << endl;
+	  if ( debug_level >= 3 || ( debug_level >= 1 && (unsigned short)ampl_modul_run_0_1 > ( pulse_output + 1 )))
+		{
+		  cerr << "Problems 7 in signal_channel::operator()" << dec << (unsigned short)ampl_modul_run_0_1 << "  " << pulse_output << "\t" << endl;
+		}
 	  ampl_modul_run_0_1 = pulse_output;
 	}
   unsigned short ampl_modul_output = pulse_output - (unsigned short)ampl_modul_run_0_1;

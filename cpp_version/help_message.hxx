@@ -18,6 +18,9 @@ string help()
   ostrstm << endl << "-v" << endl;
   ostrstm << "\tDisplays the version. Quit if no other options (other than -h) are specified" << endl;
   ostrstm << "\tMI: The version is displayed multiple times" << endl;
+  ostrstm << endl << "-d" << endl;
+  ostrstm << "\tSet the debug level" << endl;
+  ostrstm << "\tThe default is 0: no debug messages sent to the std output. MI: Only the last usage is considered" << endl;
   ostrstm << endl << "-M" << endl;
   ostrstm << "\tSwitch the format of the input or output parameters into midi mapped notes" << endl;
   ostrstm << "\tShould be placed before a -o or a -i option" << endl;
@@ -40,8 +43,8 @@ string help()
   ostrstm << "\tThe value can be 0. In such case at least one output parameters channel should be defined" << endl;
   ostrstm << "\tThis option is mostly used to convert a parameter format into another one" << endl; 
   ostrstm << "\tIf not involved, 0 is the default MI: Only the last usage is considered" << endl;
-  ostrstm << endl << "-d" << endl;
-  ostrstm << "\tDummy time beat" << endl;
+  ostrstm << endl << "-t" << endl;
+  ostrstm << "\tFollow the time beat, even if no audio output is selected" << endl;
   ostrstm << "\tIf no option to define an audio output is defined, the software computes as fast as the machine can do" << endl;
   ostrstm << "\tThis option execute the time stamps and plays as an audio output would have do TODO" << endl;
   ostrstm << endl << "-j peer-name" << endl;
