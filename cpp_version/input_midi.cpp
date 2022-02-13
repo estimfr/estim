@@ -410,7 +410,10 @@ bool input_params_midi_connec::eot()const
   return true;
 }
 
-unsigned long input_params_UI::check_next_time_stamp(){}
+unsigned long input_params_UI::check_next_time_stamp()
+{
+  return 0xffffffff;
+}
 void input_params_UI::export_next_event(const unsigned long&absolute_TS,
 										const unsigned long&diff_TS,
 										const signals_param_action&)

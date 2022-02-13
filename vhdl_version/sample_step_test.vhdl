@@ -14,7 +14,9 @@ work.signal_gene.all;
 --! Four verifications are done
 --! * the residual angle (z) is close to zero
 --! * the sum sine2 plus cosine2 is close to 1
---! * some counting of the quadrant of the sine and cosine
+--! * some counting of the quadrant change of the sine and cosine
+--! Since the test is supposed to generate one period plus a residual,
+--! only one change clockwyse should be seen.
 --! * the sum of the squares of the derivatives is close to 1\n
 --! The 2 first ones should give a result as close as the requested precision
 --! is high.
@@ -25,24 +27,21 @@ work.signal_gene.all;
 --! \n
 --! It can be used in batch mode or in stand alone.
 --! The batch mode provides signal to publish the reports after all the
---! instantiations are completed. This is to avoid to mix the progress with the
---! report data.
+--! instantiations has terminated. This is to avoid to mix the progress with the
+--! reported data.
 entity sample_step_sine_test is
   generic (
-    sub_counter_size : integer range 4 to 20 := 8; --! 2.PI / integer range 0
-                                                   --! to 31 is compulsory,
-                                                   --! this parameter adds some
-                                                   --! sharpness
+    --! 32 points from 0 to 2.PI minus epsilon are performed. 2 power this
+    --! parameter ( - 1 ) additional points are added in each interval 
+    sub_counter_size : integer range 4 to 20 := 8;
     limit_calc : std_logic_vector( 4 downto 0 ) := "00111" );
   port (
-    simul_over : out std_logic; --! Tells the simulation is over. It is used
-                                --! (with an and-reduce) in batch mode to start
-                                --! all the reporting
-    display_in :  in std_logic; --! Controls the report. 0 = wait, 1 = do it, U
-                                --! = do it after the simulation is completed
-                                --! (stand alone)
-    display_out: out std_logic); --! Pass the event to the next instantiation after the
-                                 --! report is completed (batch mode)
+    --! Tells the simulation is over. It is used (with an and-reduce) in batch mode to start all the reporting
+    simul_over : out std_logic;
+    --! Controls the report. 0 = wait, 1 = do it, U = do it after the simulation is completed (stand alone)
+    display_in :  in std_logic;
+    --! Pass the event to the next instantiation after the report is completed (batch mode)
+    display_out: out std_logic);
 end entity sample_step_sine_test;
 
 architecture arch of sample_step_sine_test is

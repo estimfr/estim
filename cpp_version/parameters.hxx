@@ -32,7 +32,7 @@ struct signals_param_action
   unsigned short channel_id;
   action_list action;
   unsigned short value;
-  signals_param_action();
+  signals_param_action(void);
   signals_param_action( const unsigned short&,const action_list&,const unsigned short&);
   friend ostream&operator<<(ostream&,const signals_param_action&);
 };
@@ -46,10 +46,10 @@ struct signals_param_action
  *   (in such case the file is opened multiple times
  */
 class input_params_base {
-  input_params_base();
+  input_params_base(void);
   bool wait_for_next_TS;
   unsigned long requested_samples;
-  virtual unsigned long check_next_time_stamp() = 0;
+  virtual unsigned long check_next_time_stamp(void) = 0;
   virtual void exec_next_event(vector<signals_param_action>&actions) = 0;
  public:
   unsigned long cumul_time_stamp;
@@ -57,12 +57,12 @@ class input_params_base {
  protected:
   unsigned short samples_per_TS;
   ostringstream info_out_stream;
-  input_params_base(const unsigned short&samples_per_TS);
+  explicit input_params_base(const unsigned short&samples_per_TS);
  public:
-  virtual ~input_params_base();
+  virtual ~input_params_base(void);
   bool check_next_event( const unsigned short&elapsed_samples, vector<signals_param_action>&action );
-  virtual bool eot() const = 0;
-  virtual bool is_ready() = 0;
+  virtual bool eot(void) const = 0;
+  virtual bool is_ready(void) = 0;
   enum clearing_t { c_unknown, c_end_of_data, c_abort, c_file_err, c_net_err, c_data_err } clearing;
 };
 /** \brief Base of the parameters control
@@ -74,7 +74,7 @@ class input_params_base {
  * The goal is also run more than one specialized control input, one per type
  */
 class output_params_base {
-  output_params_base();
+  output_params_base(void);
   virtual void export_next_event(const unsigned long&absolute_TS,
 								 const unsigned long&diff_TS,
 								 const signals_param_action&) = 0;
@@ -84,9 +84,9 @@ class output_params_base {
  protected:
   unsigned short samples_per_TS;
   ostringstream info_out_stream;
-  output_params_base(const unsigned short&samples_per_TS);
+  explicit output_params_base(const unsigned short&samples_per_TS);
  public:
-  virtual ~output_params_base();
+  virtual ~output_params_base(void);
   bool check_next_event( const unsigned short&elapsed_samples, const vector<signals_param_action>&action );
 };
 

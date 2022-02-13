@@ -26,7 +26,7 @@ class signal_channel{
   signal_channel( const unsigned short&channel_id,
 				  const unsigned char&sample_rate_id,
 				  const unsigned char&mode );
-  ~signal_channel();
+  ~signal_channel(void);
   void exec_next_event( const vector<signals_param_action>& );
   amplitude_handler amplitude;
   frequency_handler frequency;
@@ -34,7 +34,7 @@ class signal_channel{
   frequency_handler ampl_modul_freq;
   amplitude_handler pulse_depth;
   frequency_handler pulse_freq;
-  signed short operator()();
+  signed short operator()(void);
 };
 
 

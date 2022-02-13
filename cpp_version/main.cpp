@@ -123,7 +123,7 @@ int main(int argc,char *argv[] )
 
   main_loop signals(sample_rate_id,'s',channels_number);
 
-  for( deque<string>::iterator it= file_inputs.begin(); it != file_inputs.end(); it++ )
+  for( deque<string>::iterator it= file_inputs.begin(); it != file_inputs.end(); ++it )
 	// Check here for pipes and other pckeyboard style files
 	if ( (*it).compare( "-" ) != 0 )
 	  {
@@ -134,7 +134,7 @@ int main(int argc,char *argv[] )
 	  signals += new input_params_midi_pckeyboard( cin );
 	}
   // signals+=new output_params_txt;
-  for( deque<string>::iterator it= file_outputs.begin(); it != file_outputs.end(); it++ )
+  for( deque<string>::iterator it= file_outputs.begin(); it != file_outputs.end(); ++it )
 	if ( (*it).compare( "-" ))
 	  {
 		cout << "Opening text output parameters file " << *it << endl;

@@ -9,7 +9,7 @@ It is designed to:
 * run one or more export parameters module
 * output raw files or audio devices
 * be cross-plateform
-* be compiled on older machines with C++98
+* be compiled on older machines with C++03
 * run on older machines
 * output at 48, 96 or 192KHz sample rate
 * be able to add more audio interfaces in the future

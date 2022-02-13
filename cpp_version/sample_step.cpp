@@ -5,13 +5,17 @@ extern unsigned char debug_level;
 sample_step::sample_step( frequency_handler&frequency):
   frequency( frequency )
 {}
+sample_step :: ~sample_step()
+{}
 sample_step_sine :: sample_step_sine( frequency_handler&frequency ):
   sample_step( frequency )
 {}
-signed short sample_step_sine :: operator()(const unsigned short&amplitude)
+sample_step_sine :: ~sample_step_sine()
+{}
+signed short sample_step_sine :: Run_Step(const unsigned short&amplitude)
 {
   // Only 20 iterations. Since 110dB of THD are not required, this is OK
-  // C++98
+  // C++03
   const signed long cal[] = { 2097152, 1238021, 654136, 332050, 166669, 83416, 41718, 20860, 10430, 5215, 2608, 1304, 652, 326, 163, 81, 41, 20, 10, 5 };
   const vector<signed long> cor_angle_list( cal, cal + sizeof( cal ) / sizeof( cal[ 0 ] ));
   // C++11
@@ -58,7 +62,7 @@ signed short sample_step_sine :: operator()(const unsigned short&amplitude)
   // Now run the alghorythm
   for( vector<signed long>::const_iterator z_diff = cor_angle_list.begin();
 	   z_diff != cor_angle_list.end();
-	   z_diff++, shifts++ )
+	   ++z_diff, ++shifts )
 	{
 	  signed long cor_c_temp, cor_s_temp;
 	  if ( cor_z >= 0 )
@@ -110,7 +114,7 @@ signed short sample_step_sine :: operator()(const unsigned short&amplitude)
 		}
 	  else
 		{
-		  return (unsigned short)( the_return >> 8 );
+		  return (signed short)( the_return >> 8 );
 		}
 	}
 }
@@ -126,7 +130,9 @@ sample_step_pulse :: sample_step_pulse( frequency_handler&frequency, const unsig
 	  this->length = 1;
 	}
 }
-signed short sample_step_pulse ::operator()(const unsigned short&amplitude)
+sample_step_pulse :: ~sample_step_pulse()
+{}
+signed short sample_step_pulse ::Run_Step(const unsigned short&amplitude)
 {
   signed long the_return;
   frequency();
@@ -223,7 +229,9 @@ signed short sample_step_pulse ::operator()(const unsigned short&amplitude)
 sample_step_txt :: sample_step_txt( frequency_handler&frequency ):
   sample_step( frequency ), out_str( cout )
 {}
-signed short sample_step_txt ::operator()(const unsigned short&amplitude)
+sample_step_txt :: ~sample_step_txt()
+{}
+signed short sample_step_txt ::Run_Step(const unsigned short&amplitude)
 {
   signed long the_return;
   // Save it in order to not call more than one time the run operator
@@ -238,4 +246,5 @@ signed short sample_step_txt ::operator()(const unsigned short&amplitude)
 	}
   else
 	return 0;
+  return 0;
 }

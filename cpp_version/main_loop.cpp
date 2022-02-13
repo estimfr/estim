@@ -36,11 +36,11 @@ main_loop::main_loop( const unsigned char&sample_rate_id,
 main_loop::~main_loop()
 {
   signal_channel*sc;
-  for( map<unsigned short, signal_channel*>::const_iterator it=signal_list.begin(); it!=signal_list.end(); it++)
+  for( map<unsigned short, signal_channel*>::const_iterator it=signal_list.begin(); it!=signal_list.end(); ++it)
 	delete it->second;
-  for( deque<input_params_base*>::const_iterator it=params_input_list.begin(); it!=params_input_list.end(); it++)
+  for( deque<input_params_base*>::const_iterator it=params_input_list.begin(); it!=params_input_list.end(); ++it)
 	delete *it;
-  for( deque<output_params_base*>::const_iterator it=params_output_list.begin(); it!=params_output_list.end(); it++)
+  for( deque<output_params_base*>::const_iterator it=params_output_list.begin(); it!=params_output_list.end(); ++it)
 	delete *it;
 }
 main_loop&main_loop::operator+=(input_params_base*const the_input)
@@ -81,7 +81,7 @@ bool main_loop::operator()(vector<signed short>&the_out)
 	vector<signed short>::iterator it_out; } s =
 	{ signal_list.begin(), the_out.begin() };
 	   s.its != signal_list.end() && s.it_out != the_out.end();
-	   s.its++,s.it_out++)
+	   ++s.its,++s.it_out)
 	*s.it_out = (*s.its->second)();
   return true;
 };
@@ -91,13 +91,13 @@ bool main_loop::exec_actions()
   bool more_input_params( false );
   bool more_output_params( false );
   // Check if at least one of them has not yet reached the eot. If so true is returned
-  for( deque<input_params_base*>::iterator it=params_input_list.begin(); it!=params_input_list.end(); it++)
+  for( deque<input_params_base*>::iterator it=params_input_list.begin(); it!=params_input_list.end(); ++it)
 	if ((*it)->check_next_event( samples_per_param_check, actions ) )
 	  more_input_params = true;
-  for( deque<output_params_base*>::iterator it=params_output_list.begin(); it!=params_output_list.end(); it++)
+  for( deque<output_params_base*>::iterator it=params_output_list.begin(); it!=params_output_list.end(); ++it)
 	if ((*it)->check_next_event( samples_per_param_check, actions ) )
 	  more_output_params = true;
-  for( map<unsigned short,signal_channel*>::iterator it=signal_list.begin(); it!=signal_list.end(); it++)
+  for( map<unsigned short,signal_channel*>::iterator it=signal_list.begin(); it!=signal_list.end(); ++it)
   	(it->second)->exec_next_event( actions );
   actions.clear();
 
@@ -125,7 +125,7 @@ bool main_loop::is_all_ready()const
 {
   bool all_ready( true );
 
-  for( deque<input_params_base*>::const_iterator it=params_input_list.begin(); it!=params_input_list.end(); it++)
+  for( deque<input_params_base*>::const_iterator it=params_input_list.begin(); it!=params_input_list.end(); ++it)
 	if ((*it)->is_ready() == false )
 	  all_ready = false;
 
@@ -136,7 +136,7 @@ string main_loop::get_clearing()const
   ostringstream oss;
   bool all_ready( true );
 
-  for( deque<input_params_base*>::const_iterator it=params_input_list.begin(); it!=params_input_list.end(); it++)
+  for( deque<input_params_base*>::const_iterator it=params_input_list.begin(); it!=params_input_list.end(); ++it)
 	{
 	  oss << "Exit input parameyters channel: ";
 	  switch ((*it)->clearing )

@@ -21,13 +21,13 @@ class amplitude_handler
   unsigned char requested_ampl;
   // sample_rate_id should be 1 = 48KHz 2 = 96KHz 4 = 192KHz
   const unsigned sample_rate_id;
-  amplitude_handler();
+  amplitude_handler(void);
  public:
-  amplitude_handler(const unsigned char&sample_rate_id);
+  explicit amplitude_handler(const unsigned char&sample_rate_id);
   void set_volume(const unsigned char& );
   void set_slewrate(const unsigned short& );
   void set_amplitude(const unsigned char& );
-  unsigned short operator()();
+  unsigned short operator()(void);
 };
 
 #endif

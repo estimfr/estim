@@ -23,7 +23,7 @@ using namespace std;
  *   All the parameters outputs, one instance per output
  */
 class main_loop {
-  main_loop();
+  main_loop(void);
  public:
   /** \brief Main actions list
 	  It is built by all the parameters input modules
@@ -60,7 +60,7 @@ class main_loop {
 			 const unsigned short&n_channels,
 			 const unsigned short samples_per_param_check = 50,
 			 const unsigned long shutdown_length = 1000);
-  ~main_loop();
+  ~main_loop(void);
   //! Adds an input parameters interface
   main_loop&operator+=(input_params_base*const);
   //! Adds an output parameters interface
@@ -68,17 +68,17 @@ class main_loop {
   /** Get the size of a sample output
 	  \return The size unit is the number of signed short elements
   */
-  unsigned short GetSamplesSize()const;
+  unsigned short GetSamplesSize(void)const;
   /** \brief Main run operator
 	  This is the operator that has to be run for every output sample set
 	  Indeed the scheduling is done by the output
 	  \return A small array of signed short, one per channel
   */
   bool operator()(vector<signed short>&output);
-  bool exec_actions();
+  bool exec_actions(void);
   //  void exec_actions(vector<signals_param_action>actions);
-  bool is_all_ready()const;
-  string get_clearing()const;
+  bool is_all_ready(void)const;
+  string get_clearing(void)const;
 };
 
 #endif

@@ -52,7 +52,7 @@ signed short signal_channel::operator()()
 
   // Primitive 2 pulse
   // Get the sin of the pulse and divide by 2 for a range of signed -1/2 to +1/2
-  signed short pulse_run = pulse_step( (unsigned short)pulse_amplitude );
+  signed short pulse_run = pulse_step.Run_Step( (unsigned short)pulse_amplitude );
   if ( pulse_run == -32768 )
 	cerr << "Problems 2 in signal_channel::operator()" << endl;
   // Compute the pulse in a range of signed 0 +1
@@ -69,7 +69,7 @@ signed short signal_channel::operator()()
 
   // Primitive 3 amplitude modulation
   // Get the sin of the amplitude modulation and divide by 2 for a range of signed -1/2 to +1/2
-  signed short ampl_modul_run = ampl_modul_step( (unsigned short)pulse_output );
+  signed short ampl_modul_run = ampl_modul_step.Run_Step( (unsigned short)pulse_output );
   if ( ampl_modul_run == -32768 )
 	cerr << "Problems 5 in signal_channel::operator()" << endl;
   // Compute the amplitude modulation in a range of signed 0 +1
@@ -91,13 +91,13 @@ signed short signal_channel::operator()()
   unsigned short ampl_modul_output = pulse_output - (unsigned short)ampl_modul_run_0_1;
   
 
-  return (*the_step)(ampl_modul_output);
+  return the_step->Run_Step(ampl_modul_output);
 }
 
 
 void signal_channel::exec_next_event( const vector<signals_param_action>&spa )
 {
-  for( vector<signals_param_action>::const_iterator it = spa.begin(); it != spa.end(); it++ )
+  for( vector<signals_param_action>::const_iterator it = spa.begin(); it != spa.end(); ++it )
 	if( (it->channel_id == 0) || (it->channel_id == channel_id) )
 	  switch( it->action )
 		{

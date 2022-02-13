@@ -3,34 +3,26 @@ library ieee;
 use ieee.std_logic_1164.all,
   ieee.numeric_std.all;
 
---! @brief This module computes the sine ( and cosine)\n
---!
---! It does not know anything about the frequency\n
---! It takes an unsigned 24 bits as the angle,
---! low 0 = angle 0, high $ffffff = angle 2.PI - epsilon\n
---! It returns the sine as a 16 bits signed\n
---! More values are returned for debug purposes and should left open in real world\n
---! More information is in the files located in the cpp_version folder
 package signal_gene is
 component sample_step_sine is
   port (
-    CLK        : in  std_logic; --! Component runs on each clock cycle (if it
-                                --is in the running state)
+    --! Component runs on each clock cycle (if it is in the running state)
+    CLK        : in  std_logic;
     RST         : in  std_logic;
     start_calc : in  std_logic;
-    limit_calc : in  std_logic_vector( 4 downto 0 ); --! Send (others=>'1') for
-                                                     --! full computation, or an
-                                                     --! unsigned limit for fast one
-    amplitude  : in  std_logic_vector;               --! Unsigned amplitude value
-    angle      : in  std_logic_vector(23 downto 0);  --! Unsigned 0 to 2.PI value
+    --! Send (others=>'1') for full computation, or an unsigned limit for fast one
+    limit_calc : in  std_logic_vector( 4 downto 0 );
+    --! Unsigned amplitude value
+    amplitude  : in  std_logic_vector;
+    --! Unsigned 0 to 2.PI value
+    angle      : in  std_logic_vector(23 downto 0);
     completed  : out std_logic;
-    out_z      : out std_logic_vector(23 downto 0);  --! Signed truncated z
-                                                     --! (mostly used to test the
-                                                     --! residual value is close
-                                                     --! to 0)
-    out_s      : out std_logic_vector(15 downto 0);  --! Signed sine output;
-    out_c      : out std_logic_vector(15 downto 0)); --! Signed cosine output
-                                                     --! (mostly used for test purposes)
+    --! Signed truncated z (mostly used to test the residual value is close to 0)
+    out_z      : out std_logic_vector(23 downto 0);
+    --! Signed sine output;
+    out_s      : out std_logic_vector(15 downto 0);
+    --! Signed cosine output (mostly used for test purposes)
+    out_c      : out std_logic_vector(15 downto 0));
 end component sample_step_sine;
 
 
@@ -43,31 +35,39 @@ library ieee;
 use ieee.std_logic_1164.all,
   ieee.numeric_std.all;
 
+--! @brief This module computes the sine (and cosine)\n
+--!
+--! It does not know anything about the frequency\n
+--! It takes an unsigned 24 bits as the angle,
+--! low $0 = angle 0, high $ffffff = angle 2.PI - epsilon\n
+--! It returns the sine as a 16 bits signed\n
+--! More values are returned for debug purposes and should left open in real world\n
+--! More information is in the files located in the cpp_version folder
 entity sample_step_sine is
   port (
-    CLK        : in  std_logic; --! Component runs on each clock cycle (if it
-                                --is in the running state)
+    --! Component runs on each clock cycle (if it is in the running state)
+    CLK        : in  std_logic;
     RST         : in  std_logic;
     start_calc : in  std_logic;
-    limit_calc : in  std_logic_vector( 4 downto 0 ); --! Send (others=>'1') for
-                                                     --! full computation, or an
-                                                     --! unsigned limit for fast one
-    amplitude  : in  std_logic_vector;               --! Unsigned amplitude value
-    angle      : in  std_logic_vector(23 downto 0);  --! Unsigned 0 to 2.PI value
+    --! Send (others=>'1') for full computation, or an unsigned limit for fast one
+    limit_calc : in  std_logic_vector( 4 downto 0 );
+    --! Unsigned amplitude value
+    amplitude  : in  std_logic_vector;
+    --! Unsigned 0 to 2.PI value
+    angle      : in  std_logic_vector(23 downto 0);
     completed  : out std_logic;
-    out_z      : out std_logic_vector(23 downto 0);  --! Signed truncated z
-                                                     --! (mostly used to test the
-                                                     --! residual value is close
-                                                     --! to 0)
-    out_s      : out std_logic_vector(15 downto 0);  --! Signed sine output;
-    out_c      : out std_logic_vector(15 downto 0)); --! Signed cosine output
-                                                     --! (mostly used for test purposes)
+    --! Signed truncated z (mostly used to test the residual value is close to 0)
+    out_z      : out std_logic_vector(23 downto 0);
+    --! Signed sine output;
+    out_s      : out std_logic_vector(15 downto 0);
+    --! Signed cosine output (mostly used for test purposes)
+    out_c      : out std_logic_vector(15 downto 0));
 end entity sample_step_sine;
 
+  --! a 23rd bit is need for the sign in the calculation for the sign
+  --! (2's complement). The coefficients below are 22 bits number with the high
+  --! bit always 0
 architecture arch of sample_step_sine is
-  -- a 23rd bit is need for the sign in the calculation for the sign
-  -- (2's complement). The coefficients below are 22 bits number with the high
-  -- bit always 0
   subtype z_range is integer range 23 downto 0;
   subtype amplitude_range is integer range 23 downto 0;
   subtype a_range_input is integer range amplitude_range'high - 2 downto amplitude_range'low;  
@@ -89,9 +89,9 @@ begin
       
 main_proc : process ( CLK )
   variable v_cos : std_logic_vector( amplitude_range );
-  variable shifted_cos, shifted_cos_2 : std_logic_vector( amplitude_range );
+  variable shifted_cos, shifted_cos_2, shifted_cos_3 : std_logic_vector( amplitude_range );
   variable v_sin : std_logic_vector( amplitude_range );
-  variable shifted_sin, shifted_sin_2 : std_logic_vector( amplitude_range );
+  variable shifted_sin, shifted_sin_2, shifted_sin_3 : std_logic_vector( amplitude_range );
   variable v_z   : std_logic_vector( z_range );
   variable delta_z : std_logic_vector( z_range );
   variable shifted_sin_padding : std_logic_vector( amplitude_range );

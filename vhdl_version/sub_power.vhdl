@@ -4,14 +4,6 @@ use ieee.std_logic_1164.all,
   ieee.numeric_std.all,
   ieee.math_real.all;
 
---! @brief For auxiliary powers supplies, this module generates the relevant signal
---!
---! The signal is intended to pass through a transformer\n
---! Its frequency is any value, let's say, as a power of 2 division ratio
---!   of the system clock\n
---! Its third harmonic is generated and added to the main signal\n
---! By this way i) the bandwidth is under control ii) the output amplitude is
---! a little bit more controlled
 package sub_power_pac is
   component sub_power is
     port (
@@ -72,15 +64,24 @@ use ieee.std_logic_1164.all,
   ieee.numeric_std.all,
   work.sub_power_pac.all;
 
+--! @brief For auxiliary powers supplies, this module generates the relevant signal
+--!
+--! The signal is intended to pass through a transformer\n
+--! Its frequency is any value, let's say, as a power of 2 division ratio
+--!   of the system clock\n
+--! Its third harmonic is generated and added to the main signal\n
+--! By this way i) the bandwidth is under control ii) the output amplitude is
+--! a little bit more controlled
 entity sub_power is
   port (
-      CLK :  in std_logic; --! System clock
-      RST :  in std_logic;
-      EN  :  in std_logic; --! Steps forward when is '1'. This is to control
-                           --! the frequency
-      the_out : out std_logic_vector --! signed value that goes as rail to rail
-                                     --! as possible. *** Should be proofed for
-                                     --! a particular size ***
+    --! System clock
+    CLK :  in std_logic;
+    RST :  in std_logic;
+     --! Steps forward when is '1'. This is to control the frequency
+    EN  :  in std_logic;
+    --! signed value that goes as rail to rail as possible.\n
+    --! *** Should be proofed for a particular size ***
+    the_out : out std_logic_vector
     );
 end entity sub_power;
 

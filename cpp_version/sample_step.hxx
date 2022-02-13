@@ -17,10 +17,11 @@ class sample_step
 {
 protected:
   frequency_handler&frequency;
-  sample_step();
+  sample_step(void);
 public:
-  sample_step( frequency_handler&frequency );
-  virtual signed short operator()(const unsigned short&)=0;
+  explicit sample_step( frequency_handler&frequency );
+  virtual ~sample_step(void);
+  virtual signed short Run_Step(const unsigned short&amplitude)=0;
   void set_frequency( unsigned short &frequency );
   friend class signal_channel;
 };
@@ -35,10 +36,11 @@ class sample_step_output {};
  */
 class sample_step_sine : public sample_step, private sample_step_output
 {
-  sample_step_sine();
+  sample_step_sine(void);
 public:
-  sample_step_sine( frequency_handler&frequency );
-  signed short operator()(const unsigned short&);
+  explicit sample_step_sine( frequency_handler&frequency );
+  ~sample_step_sine(void);
+  signed short Run_Step(const unsigned short&amplitude);
 };
 /** \brief Regular pulse generator
  *
@@ -52,10 +54,11 @@ class sample_step_pulse : public sample_step, private sample_step_output
   unsigned short state;
   unsigned short length;
   unsigned short length_count;
-  sample_step_pulse();
+  sample_step_pulse(void);
 public:
   sample_step_pulse( frequency_handler&frequency, const unsigned short& length );
-  signed short operator()(const unsigned short&);
+  ~sample_step_pulse(void);
+  signed short Run_Step(const unsigned short&amplitude);
 };
 /** \brief Debug text generator
  *
@@ -67,10 +70,11 @@ public:
 class sample_step_txt : public sample_step, private sample_step_output
 {
   ostream&out_str;
-  sample_step_txt();
+  sample_step_txt(void);
 public:
   sample_step_txt( frequency_handler&frequency );
-  signed short operator()(const unsigned short&);
+  ~sample_step_txt(void);
+  signed short Run_Step(const unsigned short&amplitude);
 };
 
 #endif

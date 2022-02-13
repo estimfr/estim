@@ -29,7 +29,7 @@ unsigned short global_run_buffer::run_buffer( signed short*const& val_list, cons
 	while( ( actual_length + 2 * samplesSize ) <= length )
 	{
 	  signals(the_out);
-	  for( the_out_it = the_out.begin(); the_out_it!= the_out.end(); the_out_it++ )
+	  for( the_out_it = the_out.begin(); the_out_it!= the_out.end(); ++the_out_it )
 		*buffer_iter++ = *the_out_it;
 	  actual_length += 2 * samplesSize;
 	}

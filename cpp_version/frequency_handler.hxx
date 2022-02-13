@@ -31,13 +31,13 @@ class frequency_handler
 {
   unsigned long frequency;
   const unsigned short global_rate;
-  frequency_handler();
+  frequency_handler(void);
   unsigned long angle;
   bool startCycle;
   unsigned long high_hold, low_hold;
   unsigned long high_hold_count, low_hold_count;
   unsigned char lastQuadrant;
-  void CheckHold();
+  void CheckHold(void);
  public:
   /** \brief Constructor
    *
@@ -83,21 +83,21 @@ class frequency_handler
    *
    * Runs the phase at each sample. To get the result, use the relevant function according with the mode
    */
-  void operator()();
+  void operator()(void);
   /** Get angle
    *
    * Get the angle for the primitives as sinusoid.
    * The operator run should be used before
    * \return The result is a 24 bits unsigned
    */
-  unsigned long GetAngle()const;
+  unsigned long GetAngle(void)const;
   /** Get start cycle
    *
    * Get an event each time the angle rolls out the maximum value
    * The operator run should be used before
    * \return Returns a boolean true one time when the cycle starts
    */ 
-  bool GetStartCycle()const; 
+  bool GetStartCycle(void)const; 
 };
 
 #endif
