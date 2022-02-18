@@ -1,5 +1,4 @@
 #include "sample_step.hxx"
-
 extern unsigned char debug_level;
 
 sample_step::sample_step( frequency_handler&frequency):
@@ -21,23 +20,24 @@ signed short sample_step_sine :: Run_Step(const unsigned short&amplitude)
   // C++11
   //  const vector<signed long> cor_angle_list{ 2097152, 1238021, 654136, 332050, 166669, 83416, 41718, 20860, 10430, 5215, 2608, 1304, 652, 326, 163, 81, 41, 20, 10, 5};
 
-  signed long cor_c;
-  signed long cor_s;
+  signed long cor_c, cor_s;
   signed long cor_z;
 
   // Save it in order to not call more than one time the run operator
   signed long amplitude_r( amplitude );
+
+  // Shift would have been 7 to convert unsigned short into signed long24
+  // However cordic algho introduces a small gain of about 1.6468
+  // then the starting amplitude is divided by two
   amplitude_r <<= 6;
+  // To avoid the rounding does not keep a regular spacing
+  // between the consecutive angles, the value is multiplied by 1.0..01
   amplitude_r |= amplitude_r >> 16;
 
   frequency();
   unsigned long angle = frequency.GetAngle();
 
   // Pereform "by hand the 2 first steps"
-
-  // shift would have been 7 to convert unsigned short into signed long24
-  // however cordic algho introduces a small gain of about 1.6468
-  // then the amplitude is divided by two
   switch( angle & 0x00c00000 )
     {
     case 0x00000000:
@@ -138,8 +138,14 @@ signed short sample_step_pulse ::Run_Step(const unsigned short&amplitude)
   frequency();
   // Save it in order to not call more than one time the run operator
   signed long amplitude_r( amplitude );
-  amplitude_r <<= 6;
+  // Shift is 7 to convert unsigned short into signed long24
+  amplitude_r <<= 7;
+  // To avoid the rounding does not keep a regular spacing
+  // between the consecutive angles, the value is multiplied by 1.0..01
   amplitude_r |= amplitude_r >> 16;
+  // With a few additional calculation, the EMC problems are reduced
+  // The goal is not to implement a full filter but to make simple
+  // arithmetics to avoid sharp corners
   switch( state )
 	{
 	case 0:
@@ -155,49 +161,49 @@ signed short sample_step_pulse ::Run_Step(const unsigned short&amplitude)
 	case 17:
 	case 31:
 	  state += 1;
-	  the_return = (signed long)amplitude_r >> 3;
+	  the_return = amplitude_r >> 4;
 	  break;
 	case 2:
 	case 14:
 	case 18:
 	case 30:
 	  state += 1;
-	  the_return = (signed long)amplitude_r >> 2;
+	  the_return = amplitude_r >> 3;
 	  break;
 	case 3:
 	case 13:
 	case 19:
 	case 29:
 	  state += 1;
-	  the_return = (signed long)amplitude_r >> 1;
+	  the_return = amplitude_r >> 2;
 	  break;
 	case 4:
 	case 12:
 	case 20:
 	case 28:
 	  state += 1;
-	  the_return = (signed long)amplitude_r;
+	  the_return = amplitude_r >> 1;
 	  break;
 	case 5:
 	case 11:
 	case 21:
 	case 27:
 	  state += 1;
-	  the_return = ((signed long)amplitude_r << 1 ) - ((signed long)amplitude_r >> 1);
+	  the_return = amplitude_r - (amplitude_r >> 2);
 	  break;
 	case 6:
 	case 10:
 	case 22:
 	case 26:
 	  state += 1;
-	  the_return = ((signed long)amplitude_r << 1 ) - ((signed long)amplitude_r >> 2 );
+	  the_return = amplitude_r - (amplitude_r >> 3 );
 	  break;
 	case 7:
 	case 9:
 	case 23:
 	case 25:
 	  state += 1;
-	  the_return = ((signed long)amplitude_r << 1 ) - ((signed long)amplitude_r >> 3);
+	  the_return = amplitude_r - (amplitude_r >> 4 );
 	  length_count = 0;
 	  break;
 	case 8:
@@ -207,7 +213,7 @@ signed short sample_step_pulse ::Run_Step(const unsigned short&amplitude)
 		{
 		  state += 1;
 		}
-	  the_return = (signed long)amplitude_r << 1;
+	  the_return = amplitude_r;
 	  break;
 	case 16:
 	  state += 1;
