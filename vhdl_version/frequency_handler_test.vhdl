@@ -5,23 +5,8 @@ use ieee.std_logic_1164.all,
   ieee.math_real.all,
   work.frequency_handler_pac.all;
 
---! @brief This module runs a single test of sample_step_sine
+--! @brief This module runs a single test of frequency_handler
 --!
---! It runs a full sine with some residual points
---! * The abort/calculation limitation is a parameter
---! * The number of points is a parameter\n
---! \n
---! Four verifications are done
---! * the residual angle (z) is close to zero
---! * the sum sine2 plus cosine2 is close to 1
---! * some counting of the quadrant change of the sine and cosine
---! Since the test is supposed to generate one period plus a residual,
---! only one change clockwyse should be seen.
---! * the sum of the squares of the derivatives is close to 1\n
---! The 2 first ones should give a result as close as the requested precision
---! is high.
---! The 2 last ones are more tricky if the precisions is low and/or
---! the sharpness is low\n
 --! \n
 --! For long simulation a progress data is sent regularly\n
 --! \n
@@ -46,16 +31,17 @@ architecture arch of frequency_handler_test is
   signal CLK : std_logic := '0';
   signal EN : std_logic;
   signal RST : std_logic_vector( 5 downto 0 ) := ( others => '1' );
-  signal main_counter : std_logic_vector( 5 downto 0 ) := ( others => '0' );
-  constant main_counter_max : std_logic_vector( main_counter'range ) := "100010";
-  signal sub_counter : std_logic_vector( 5 downto 0 ) := ( others => '0' );
-  constant sub_counter_max : std_logic_vector( sub_counter'range ) := ( others => '1' );
+  signal main_counter : std_logic_vector( 7 downto 0 ) := ( others => '0' );
+  constant main_counter_max : std_logic_vector( main_counter'range ) := ( others=> '1' );
+  signal sub_counter : std_logic_vector( 14 downto 0 ) := ( others => '0' );
+  signal sub_counter_max : std_logic_vector( sub_counter'range ) := ( others => '1' );
   signal angle : std_logic_vector( 23 downto 0 );
   signal start_cycle : std_logic;
   signal val_param : std_logic_vector( 15 downto 0);
   signal write_param : std_logic_vector( 2 downto 0 ):= "000";
   signal simul_over_s : std_logic := '0';
   signal display_out_s : std_logic := '0';
+  signal writing_parameter : std_logic_vector( 3 downto 0 ) := "0000";
 begin
   simul_over <= simul_over_s;
   
@@ -67,15 +53,57 @@ begin
           RST( RST'high ) <= '0';
           if RST = std_logic_vector( to_unsigned( 0 , RST'length )) then
           --        counter <= std_logic_vector( unsigned( counter ) + 1 );
-              if sub_counter /= sub_counter_max then
-                sub_counter <= std_logic_vector( unsigned( sub_counter ) + 1 );
+            WRITE_PARAM_CASE : case writing_parameter is
+              when "0000" =>
+                val_param( val_param'high downto val_param'high - 2 ) <= "000";
+                val_param( val_param'low + 12 downto val_param'low + 7 ) <=
+                  main_counter( main_counter'high downto main_counter'high - 5 );
+                val_param( val_param'low + 6 downto val_param'low + 1 ) <=
+                  main_counter( main_counter'high downto main_counter'high - 5 );
+                val_param( val_param'low ) <= '0';
+                writing_parameter <= std_logic_vector( unsigned( writing_parameter ) + 1 );
+              when "0011" =>
+                val_param( val_param'high downto val_param'high - 8 ) <= "000000000";
+                val_param( val_param'low + 6 downto val_param'low + 1 ) <=
+                  ( others => main_counter( main_counter'low ));
+                val_param( val_param'low ) <= '0';
+                writing_parameter <= std_logic_vector( unsigned( writing_parameter ) + 1 );
+              when "0110" =>
+                val_param( val_param'high downto val_param'high - 8 ) <= "000000000";
+                val_param( val_param'low + 6 downto val_param'low + 1 ) <=
+                  ( others => main_counter( main_counter'low + 1));
+                val_param( val_param'low ) <= '0';
+                writing_parameter <= std_logic_vector( unsigned( writing_parameter ) + 1 );
+              when "0001" =>
+                write_param <= "001";
+                writing_parameter <= std_logic_vector( unsigned( writing_parameter ) + 1 );
+              when "0100" =>
+                write_param <= "010";
+                writing_parameter <= std_logic_vector( unsigned( writing_parameter ) + 1 );
+              when "0111" =>
+                write_param <= "011";
+                writing_parameter <= std_logic_vector( unsigned( writing_parameter ) + 1 );
+              when "0010" | "0101" | "1000" =>
+                write_param <= "000";
+                writing_parameter <= std_logic_vector( unsigned( writing_parameter ) + 1 );
+              when others =>  
+                if sub_counter /= sub_counter_max then
+                  sub_counter <= std_logic_vector( unsigned( sub_counter ) + 1 );
+                else
+                  sub_counter <= ( others => '0' );
+                  sub_counter_max( sub_counter_max'high downto sub_counter_max'high + 1 - main_counter'length ) <=
+                    not main_counter;
+                  main_counter <= std_logic_vector( unsigned( main_counter ) + 1 );
+                  writing_parameter <= "0000";
+                  report "L " & 
+                    integer'image( to_integer( unsigned( main_counter )) + 1 ) & "/256 done";
+                end if;
+            end case  WRITE_PARAM_CASE;
+              if sub_counter( sub_counter'low + 2 downto sub_counter'low ) = "001" then
+                EN <= '1';
               else
-                sub_counter <= ( others => '0' );
-                main_counter <= std_logic_vector( unsigned( main_counter ) + 1 );
-                report "L " & 
-                  integer'image( to_integer( unsigned( main_counter ))) & "/33 done";
+                EN <= '0';
               end if;
-              
             end if;
         end if CLK_1;
         CLK <= not CLK;

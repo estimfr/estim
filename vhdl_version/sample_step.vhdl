@@ -85,9 +85,8 @@ entity sample_step_sine is
     out_c      : out std_logic_vector(23 downto 0));
 end entity sample_step_sine;
 
-  --! a 23rd bit is need for the sign in the calculation for the sign
-  --! (2's complement). The coefficients below are 22 bits number with the high
-  --! bit always 0
+--! This architecture computes the algo for the run and debug mode\n
+--! The precision can be limited to a certain number of iterations for fast calculations
 architecture arch of sample_step_sine is
   subtype z_range is integer range 23 downto 0;
   subtype amplitude_range is integer range 23 downto 0;
@@ -103,6 +102,7 @@ architecture arch of sample_step_sine is
   signal cordic_iter : std_logic_vector( 4 downto 0 );
   signal cordic_iter_last : std_logic_vector( cordic_iter'range );
 begin
+  assert out_s'length > 2 report "Size of the output should be at least 3, " & integer'image( out_s'length ) & " is a non sense" severity error;
   assert cor_angle_list'length < 30 report "Size of cordic_iter is too small" severity failure;
   assert amplitude'length <= the_z'length report "Size of the amplitude (" & integer'image( amplitude'length ) & ") should be lower of equal of the size of z " & integer'image( the_z'length ) & ")" severity failure;
   
@@ -181,21 +181,6 @@ main_proc : process ( CLK )
           finalcalc_op_2 := ( others => the_cos( the_cos'high ));
           finalcalc_op_2( finalcalc_op_2'high - 2 downto finalcalc_op_2'low ) := the_cos( the_cos'high downto the_cos'low + 2 );
           shifted_cos <= std_logic_vector( signed( finalcalc_op_1 ) + signed( finalcalc_op_2 ));
-          --shifted_sin( shifted_sin'high downto shifted_sin'high - 2 ) := ( others => the_sin( the_sin'high ));
-          --shifted_sin( shifted_sin'high - 3 downto shifted_sin'low ) :=
-          --  the_sin( the_sin'high downto the_sin'low + 3 );
-          --shifted_sin_2( shifted_sin_2'high downto shifted_sin_2'high - 3 ) := ( others => the_sin( the_sin'high ));
-          --shifted_sin_2( shifted_sin_2'high - 4 downto shifted_sin_2'low ) :=
-          --  the_sin( the_sin'high downto the_sin'low + 4 );
-          --the_sin <= std_logic_vector( signed( the_sin ) + signed( shifted_sin ) + signed( shifted_sin_2 ));
-
-          --shifted_cos( shifted_cos'high downto shifted_cos'high - 2 ) := ( others => the_cos( the_cos'high ));
-          --shifted_cos( shifted_cos'high - 3 downto shifted_cos'low ) :=
-          --  the_cos( the_cos'high downto the_cos'low + 3 );
-          --shifted_cos_2( shifted_cos_2'high downto shifted_cos_2'high - 3 ) := ( others => the_cos( the_cos'high ));
-          --shifted_cos_2( shifted_cos_2'high - 4 downto shifted_cos_2'low ) :=
-          --  the_cos( the_cos'high downto the_cos'low + 4 );
-          --the_cos <= std_logic_vector( signed( the_cos ) + signed( shifted_cos ) + signed( shifted_cos_2 ));
           cordic_iter <= std_logic_vector( unsigned( cordic_iter_last ) + 1 );
         elsif cordic_iter = std_logic_vector( unsigned( cordic_iter_last ) + 1 ) then
           finalcalc_op_1 := ( others => shifted_sin( shifted_sin'high ));
@@ -213,8 +198,6 @@ main_proc : process ( CLK )
         -- If on hold, starting now
         elsif start_calc = '1' then
           cordic_iter <= ( others => '0' );
-          v_cos := ( others => '0' );
-          v_sin := ( others => '0' );
 
           -- Fill up the amplitude with a barrel shifting of the given amplitude
           -- This improves the rail to rail in case the precision of the input
@@ -228,8 +211,9 @@ main_proc : process ( CLK )
               ind_a := amplitude'length - 1;
             end if;
           end loop build_input_amplitude;
-			 
-          
+			           
+          v_cos := ( others => '0' );
+          v_sin := ( others => '0' );
           -- Execute the 2 first step by hand while placing the value into 
           case angle( angle'high downto angle'high - 1 ) is
             when "00" =>
@@ -270,6 +254,137 @@ main_proc : process ( CLK )
   end process main_proc;  
       
 end architecture arch;
+
+--! This architecture computes a very fast calculation 
+--! to get a very fast behavior while verifying at a higher level.
+--! The 4 high bits of the angle are considered, the other are voided.\n
+--! PI/8 is the step of the the calculation
+architecture fast of sample_step_sine is
+  subtype z_range is integer range 23 downto 0;
+  subtype amplitude_range is integer range 23 downto 0;
+  subtype a_range_input is integer range amplitude_range'high - 1 downto amplitude_range'low;  
+  type cor_angle_list_t is array(integer range<>) of std_logic_vector(z_range);
+  constant cor_angle_list_length : integer := 20;
+-- List of the angles for which their tangent is the inverse of a power of 2 
+  signal the_sin : std_logic_vector( amplitude_range );
+  signal the_cos : std_logic_vector( amplitude_range );
+  signal the_z   : std_logic_vector( z_range );
+  signal cordic_iter : std_logic_vector( 4 downto 0 );
+  signal cordic_iter_last : std_logic_vector( cordic_iter'range );
+
+  signal d1 : std_logic_vector( a_range_input );
+  signal d2, d3, d4 : std_logic_vector( amplitude_range );
+begin
+  assert out_s'length > 2 report "Size of the output should be at least 3, " & integer'image( out_s'length ) & " is a non sense" severity error;
+  assert cor_angle_list_length < 30 report "Size of cordic_iter is too small" severity failure;
+  assert amplitude'length <= the_z'length report "Size of the amplitude (" & integer'image( amplitude'length ) & ") should be lower of equal of the size of z " & integer'image( the_z'length ) & ")" severity failure;
+  
+  out_z <= the_z;
+  out_s <= the_sin(the_sin'high downto the_sin'high + 1 - out_s'length );
+  out_c <= the_cos(the_cos'high downto the_cos'high + 1 - out_c'length );
+      
+main_proc : process ( CLK )
+  variable v_cos : std_logic_vector( amplitude_range );
+  variable v_sin : std_logic_vector( amplitude_range );
+  variable input_amplitude : std_logic_vector( a_range_input );
+  variable input_full : std_logic_vector( amplitude_range );
+  variable input_half : std_logic_vector( amplitude_range );
+  variable input_fourth : std_logic_vector( amplitude_range );
+  variable input_eighth : std_logic_vector( amplitude_range );
+  variable input_sixteenth : std_logic_vector( amplitude_range );
+  variable ind_a : integer;
+--  variable dumy_var : std_logic;
+begin
+    if rising_edge( CLK ) then
+      RST_IF : if RST = '0' then
+        -- Index is up to N - 1, process the cordic algo
+        RUN_IF : if to_integer( unsigned( cordic_iter )) < to_integer( unsigned( cordic_iter_last )) then
+
+          cordic_iter <= std_logic_vector( unsigned( cordic_iter ) + 1 );
+        elsif cordic_iter = cordic_iter_last then
+          cordic_iter <= std_logic_vector( unsigned( cordic_iter ) + 1 );          
+        elsif cordic_iter = std_logic_vector( unsigned( cordic_iter_last ) + 1 ) then
+          completed <= '1';
+          cordic_iter <= ( others => '1' );
+        -- If on hold, starting now
+        elsif start_calc = '1' then
+          cordic_iter <= ( others => '0' );
+
+          ind_a := amplitude'length - 1;
+          build_input_amplitude: for ind_ia in input_amplitude'high downto input_amplitude'low loop
+            input_amplitude( ind_ia ) := amplitude( amplitude'low + ind_a );
+            if ind_a /= 0 then
+              ind_a := ind_a - 1;
+            else
+              ind_a := amplitude'length - 1;
+            end if;
+          end loop build_input_amplitude;
+          input_full( input_half'high ) :=                                           '0';
+          input_half( input_half'high downto input_half'high - 1 ) :=                ( others => '0' );
+          input_fourth( input_fourth'high downto input_fourth'high - 2 ) :=          ( others => '0' );
+          input_eighth( input_eighth'high downto input_eighth'high - 3 ) :=          ( others => '0' );
+          input_sixteenth( input_sixteenth'high downto input_sixteenth'high - 4 ) := ( others => '0' );
+          input_full( input_full'high - 1 downto input_full'low ) :=                input_amplitude;
+          input_half( input_half'high - 2 downto input_half'low ) :=                input_amplitude( input_amplitude'high downto input_amplitude'low + 1 );
+          input_fourth( input_fourth'high - 3 downto input_fourth'low ) :=          input_amplitude( input_amplitude'high downto input_amplitude'low + 2 );
+          input_eighth( input_eighth'high - 4 downto input_eighth'low ) :=          input_amplitude( input_amplitude'high downto input_amplitude'low + 3 );
+          input_sixteenth( input_sixteenth'high - 5 downto input_sixteenth'low ) := input_amplitude( input_amplitude'high downto input_amplitude'low + 4 );
+
+          d1 <= input_amplitude;
+          d2 <= input_fourth;
+          d3 <= input_eighth;
+          d4 <= input_sixteenth;
+          
+          v_cos := ( others => '0' );
+          v_sin := ( others => '0' );
+          case angle( angle'high downto angle'high - 3 ) is
+            when "0000" | "1000" =>
+              v_cos := input_full; 
+            when "0100" | "1100" =>
+              v_sin := input_full;
+            when "0010" | "0110" | "1010" | "1110" =>
+              v_cos := std_logic_vector( signed( input_half ) + signed( input_eighth ) + signed( input_sixteenth ));
+              v_sin := std_logic_vector( signed( input_half ) + signed( input_eighth ) + signed( input_sixteenth ));
+            when "0001" | "0111" | "1001" | "1111" =>
+              v_cos := std_logic_vector( signed( input_half ) + signed( input_fourth ) + signed( input_sixteenth ));
+              v_sin := input_half;
+            when "0011" | "0101" | "1011" | "1101" =>
+              v_cos := input_half;
+              v_sin := std_logic_vector( signed( input_half ) + signed( input_fourth ) + signed( input_sixteenth ));
+            when others =>
+              NULL;
+          end case;
+          if angle( angle'high ) = '1' then
+            the_sin <= std_logic_vector( - signed( v_sin ));
+          else
+            the_sin <= v_sin;
+          end if;
+          if angle( angle'high ) = '1' xor angle( angle'high - 1 ) = '1' then
+            the_cos <= std_logic_vector( - signed( v_cos ));
+          else
+            the_cos <= v_cos;
+          end if;
+          the_z <= ( others => '0' );
+          completed <= '0';
+          -- Initiate the termination if all the list was computed or if an
+          -- abort is reached
+          if to_integer( unsigned( limit_calc )) < to_integer( unsigned( cordic_iter )) then
+            cordic_iter_last <= limit_calc;
+          else
+            cordic_iter_last <= std_logic_vector( to_unsigned( cor_angle_list_length, cordic_iter'length ));
+          end if;
+          -- no else as there is nothing to do, waiting for the start
+        end if RUN_IF;
+      else
+        -- This is always greater than the limit calc
+        -- cordic_iter is a 5 bits vector as the list contains about 20 elements
+        cordic_iter <= ( others => '1' );
+        completed <= '0';
+      end if RST_IF;
+    end if;
+  end process main_proc;  
+      
+end architecture fast;
     
 
 library ieee;
@@ -311,6 +426,7 @@ architecture arch of sample_step_pulse is
   signal state : std_logic_vector( 5 downto 0 );
   signal length_count : std_logic_vector( width'range );
 begin
+  assert out_p'length > 1 report "Size of the output should be at least 2, " & integer'image( out_p'length ) & " is a non sense" severity error;
   assert amplitude'length >= ( out_p'length - 1 )
     report "Size of the output (" & integer'image( amplitude'length ) &
     ") should not be larger than the size of the amplitude ( " & integer'image( amplitude'length ) &

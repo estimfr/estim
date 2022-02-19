@@ -78,12 +78,11 @@ begin
               end if;
             end loop;
           when "010" =>
-            high_hold( high_hold'high downto high_hold'high + 1 - 4 - sample_rate_id_pwr2 - division_rate_pwr2 ) <=
-              parameter;
-            null;
+            high_hold( high_hold'high downto high_hold'high + 1 - parameter'length ) <= parameter;
+            high_hold( high_hold'high - parameter'length downto high_hold'low )      <= ( others => '0' );
           when "011" =>
-            low_hold( low_hold'high downto low_hold'high + 1 - 4 - sample_rate_id_pwr2 - division_rate_pwr2 ) <=
-              parameter;
+            low_hold( low_hold'high downto low_hold'high + 1 - parameter'length ) <= parameter;
+            low_hold( low_hold'high + 1 - parameter'length downto low_hold'low ) <= ( others => '0' );
           when "100" =>
             angle_v := std_logic_vector( unsigned( angle ) +
                                          unsigned( parameter( parameter'low + 3 downto parameter'low ) & padding_low_PS ));
@@ -104,7 +103,7 @@ begin
             when "0001" =>
               hold_count <= high_hold;
               start_cycle <= '0';
-            when "0110" =>
+            when "1011" =>
               hold_count <= low_hold; 
               start_cycle <= '0';
             when others =>

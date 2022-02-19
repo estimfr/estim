@@ -97,3 +97,21 @@ begin
       display_in => display_io( 4 ) ,
       display_out => open );
 end architecture arch;
+
+
+configuration sample_step_sine_generic_rtl_test of sample_step_sine_generic_test is
+  for arch
+    for all : sample_step_sine_test
+    use configuration work.sample_step_sine_rtl_test;
+    end for;
+  end for;
+end configuration sample_step_sine_generic_rtl_test;
+
+
+configuration sample_step_sine_generic_iobehavior_test of sample_step_sine_generic_test is
+  for arch
+    for all : sample_step_sine_test
+    use configuration work.sample_step_sine_iobehavior_test;
+    end for;
+  end for;
+end configuration sample_step_sine_generic_iobehavior_test;

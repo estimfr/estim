@@ -71,7 +71,7 @@ architecture arch of sample_step_sine_test is
   signal amplitude_coeff : real;
   signal simul_over_s : std_logic := '0';
   signal display_out_s : std_logic := '0';
-  signal debug_der_c, debug_der_s : integer;
+  -- signal debug_der_c, debug_der_s : integer;
   signal derivate_started : boolean := false;
   signal derivate_count : integer := 1;
   type quadrant_trans_t is array( 0 to 15 ) of natural;
@@ -190,8 +190,8 @@ begin
                     -- * aborts at low iterations
                     square_der_sc := (( int_val_s - last_s ) / ( 8 * derivate_count )) ** 2 +
                                      (( int_val_c - last_c ) / ( 8 * derivate_count )) ** 2;
-                    debug_der_s <= (( int_val_s - last_s ) / ( 8 * derivate_count )) ** 2;
-                    debug_der_c <= (( int_val_c - last_c ) / ( 8 * derivate_count )) ** 2;
+--                    debug_der_s <= (( int_val_s - last_s ) / ( 8 * derivate_count )) ** 2;
+--                    debug_der_c <= (( int_val_c - last_c ) / ( 8 * derivate_count )) ** 2;
                     if square_der_sc > max_square_der_sc then
                       max_square_der_sc <= square_der_sc;
                     end if;
@@ -252,12 +252,16 @@ begin
         real'image( real( min_square_der_sc ) * amplitude_coeff ** 2 / real( 2 ** 29 )) &
         ", max = " & real'image( real( max_square_der_sc ) * amplitude_coeff ** 2 / real( 2 ** 29 )) severity note;
       -- Angle is unsigned but z is signed. the we receive it as a 23 bits vlue
-      report "Residual z is close to 0: " &
+      if min_residual_z /= 0 or max_residual_z /= 0 then
+        report "Residual z is close to 0: " &
         real'image( real( min_residual_z ) / real( 2 ** 23 )) &
         ", max = " & real'image( real( max_residual_z ) / real( 2 ** 23 )) &
         ", zesidual z as min = 1/" &
         integer'image( integer( round( real( 2 ** 23 ) / real( min_residual_z )))) &
         ", max = 1/" & integer'image( integer( round( real( 2 ** 23 ) / real( max_residual_z ))) ) severity note;
+      else
+        report "Residual z is 0, perhaps the fast behavior architecftue has been used" severity note;
+      end if;
       display_out_s <= '1';
     end process display;
 
@@ -275,6 +279,21 @@ begin
         
 end architecture arch;
 
+configuration sample_step_sine_rtl_test of sample_step_sine_test is
+  for arch
+    for sample_step_sine_instanc : sample_step_sine
+      use entity work.sample_step_sine( arch );
+    end for;
+  end for;
+end configuration sample_step_sine_rtl_test;
+
+configuration sample_step_sine_iobehavior_test of sample_step_sine_test is
+  for arch
+    for sample_step_sine_instanc : sample_step_sine
+      use entity work.sample_step_sine( fast );
+    end for;
+  end for;
+end configuration sample_step_sine_iobehavior_test;
 
 --! Use standard library
 library ieee;
