@@ -1,11 +1,12 @@
 CXX?=g++
 CXXFLAGS?=-O2
+DEFAULTFLAGS?=-D__OUTPUT_SINE_MODE__
 
 estim					:	main.o main_loop.o bundle_signals.o input_midi.o output_midi.o parameters.o sample_step.o global_run.o amplitude_handler.o frequency_handler.o
 	$(CXX) $(CXXFLAGS) -o estim main.o main_loop.o bundle_signals.o input_midi.o output_midi.o parameters.o sample_step.o global_run.o amplitude_handler.o frequency_handler.o
 
 main.o					:	main.cpp help_message.hxx
-	$(CXX) -c $(CXXFLAGS) -o main.o main.cpp
+	$(CXX) -c $(CXXFLAGS) $(DEFAULTFLAGS) -o main.o main.cpp
 
 amplitude_handler.o		:	amplitude_handler.hxx		amplitude_handler.cpp
 	$(CXX) -c $(CXXFLAGS) -o amplitude_handler.o amplitude_handler.cpp

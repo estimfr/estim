@@ -32,13 +32,21 @@ int main(int argc,char *argv[] )
   bool has_cin;
   bool has_cout;
 
+#ifdef __OUTPUT_SINE_MODE__
+  char output_mode('s');
+#elif __OUTPUT_PULSES_MODE__
+  char output_mode('p');
+#else
+  #error A default output mode should be specified
+#endif
+
   string filename;
   char sample_rate_id = 1;
   char channels_number = 0;
 
   debug_level = 0;
 
-  while (( opt= getopt( argc, argv, "d:o:i:f:c:tj:r:hv" )) != EOF ) 
+  while (( opt= getopt( argc, argv, "d:o:i:K:f:c:tj:r:hv" )) != EOF ) 
 	{
 	  switch ( opt )
 		{
@@ -56,6 +64,9 @@ int main(int argc,char *argv[] )
 		case 'f':
 		  filename = string( optarg );
 		  has_output = true;
+		  break;
+		case 'K':
+		  output_mode = optarg[ 0 ];
 		  break;
 		case 'c':
 		  channels_number = atoi( optarg );
@@ -121,7 +132,19 @@ int main(int argc,char *argv[] )
 	  cout << "Opening raw file " << filename.c_str() << " for writing" << endl;
 	}
 
-  main_loop signals(sample_rate_id,'s',channels_number);
+  switch ( output_mode )
+	{
+	case 's':
+	  cout << "Sine output mode is used" << endl;
+	  break;
+	case 'p':
+	  cout << "Pulses output mode is used" << endl;
+	  break;
+	case 'b':
+	  cout << "Both output mode is used" << endl;
+	  break;
+	}
+  main_loop signals(sample_rate_id,output_mode,channels_number);
 
   for( deque<string>::iterator it= file_inputs.begin(); it != file_inputs.end(); ++it )
 	// Check here for pipes and other pckeyboard style files
